@@ -4,6 +4,8 @@ import Box from "@mui/material/Box";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import { Button, Paper } from "@mui/material";
+import data from "../1.json";
+import LandinPage from "./LandinPage";
 
 let MENU1 = {
   veg: {
@@ -46,7 +48,35 @@ const MENU3 = [
   { name: "4", price: { half: 70, full: 100 } },
 ];
 
-const SelectPriceButton = ({ name, price }) => {
+const tableOrders = {
+  1: [
+    {
+      name: "biryani",
+      type: "full",
+      price: 300,
+      qty: 2,
+    },
+  ],
+  2: [
+    {
+      name: "biryani",
+      type: "full",
+      price: 300,
+      qty: 2,
+    },
+    {
+      name: "dal fry",
+      type: "half",
+      price: 300,
+      qty: 2,
+    },
+  ],
+};
+
+const SelectPriceButton = ({ idx, name, price, length }) => {
+  const [orderDetails, setOrderDetails] = React.useState([]);
+  // const [itemQuantity, setItemQuantity] = React.useState(0);
+  const [tableNo, setTableNo] = React.useState(null);
   /* 
     dish name: str,
     price: int,
@@ -54,7 +84,44 @@ const SelectPriceButton = ({ name, price }) => {
     action:
     add to main bill
     */
-  console.log(name, price);
+  // console.log(idx, name, price);
+  console.log("orderDetails", orderDetails);
+  let quantity = "";
+  if (length === 1) {
+    quantity = "Full -  ";
+  } else if (length === 2) {
+    if (idx === 0) {
+      quantity = "Half -  ";
+    } else {
+      quantity = "Full -  ";
+    }
+  } else if (length === 3) {
+    if (idx === 0) {
+      quantity = "Quarter - ";
+    } else if (idx === 1) {
+      quantity = "Half - ";
+    } else {
+      quantity = "Full -  ";
+    }
+  }
+
+  const onRemoveClick = (name) => {
+    // setOrderDetails(...orderDetails, { name: name,  })
+    const newOrderDetails = [...orderDetails];
+    console.log("newOrderDetails", newOrderDetails);
+    const index = newOrderDetails.findIndex((item) => item.name === name);
+    newOrderDetails[index]["qty"] -= 1;
+    setOrderDetails(newOrderDetails);
+  };
+
+  const onAddClick = (name) => {
+    const newOrderDetails = [...orderDetails];
+    console.log("newOrderDetails", newOrderDetails);
+    const index = newOrderDetails.findIndex((item) => item.name === name);
+    newOrderDetails[index]["qty"] += 1;
+    setOrderDetails(newOrderDetails);
+  };
+
   return (
     <Paper
       className="SelectPriceOption"
@@ -71,15 +138,16 @@ const SelectPriceButton = ({ name, price }) => {
         size="small"
         sx={{ borderRadius: "20px", border: "0px" }}
       >
-        <RemoveCircleOutlineIcon />
+        <RemoveCircleOutlineIcon onClick={(name) => onRemoveClick(name)} />
       </Button>
+      <Typography>{quantity}</Typography>
       <Typography>{price}</Typography>
       <Button
         variant="outlined"
         size="small"
         sx={{ borderRadius: "20px", border: "0px" }}
       >
-        <AddCircleOutlineIcon />
+        <AddCircleOutlineIcon onClick={(name) => onAddClick(name)} />
       </Button>
     </Paper>
   );
@@ -99,10 +167,12 @@ const MenuCard = ({ name, veg, prices }) => {
       className="MenuBoxGoldColor"
       elevation={3}
       sx={{
-        minHeight: "100px",
-        width: "92vw",
-        height: "20vh",
-        marginTop: "1vh",
+        // minHeight: "100px",
+        // width: "92vw",
+        // height: "20vh",
+        margin: "1vh 1vw",
+        display: "flex",
+        flexWrap: "wrap",
         backgroundColor: "rgba(212,175,55,0.3)",
         borderTop: `3px solid rgba(0, 0, 0, 0.4)`,
         borderLeft: `3px solid rgba(0, 0, 0, 0.4)`,
@@ -122,8 +192,8 @@ const MenuCard = ({ name, veg, prices }) => {
           justifyContent: "center",
           alignItems: "center",
           position: "relative",
-          top: "2%",
-          left: "2%",
+          top: "1.5vh",
+          left: "5%",
         }}
       >
         <Box
@@ -142,6 +212,7 @@ const MenuCard = ({ name, veg, prices }) => {
           position: "relative",
           top: "-15%",
           left: "10%",
+          paddingBottom: "20px",
         }}
       >
         {name}
@@ -156,8 +227,15 @@ const MenuCard = ({ name, veg, prices }) => {
           justifyContent: "space-around",
         }}
       >
-        {prices.map((price) => {
-          return <SelectPriceButton name={name} price={price} />;
+        {prices.map((price, idx) => {
+          return (
+            <SelectPriceButton
+              idx={idx}
+              name={name}
+              price={price}
+              length={prices.length}
+            />
+          );
         })}
       </Box>
     </Paper>
@@ -229,35 +307,47 @@ function Customer() {
           Welcome to Bhilai Biryani House
         </Typography>
       </Box>
+      <Box sx={{ height: "16vh" }} />
+      {Object.keys(data).map((key) => {
+        return (
+          <>
+            <MenuHeadings header={key} />
+            {Object.keys(data[key]).map((item) => {
+              console.log(data[key][item]);
 
-      <Box
-        sx={{
-          minHeight: "60px",
-          boxShadow: `0px 10px 15px rgba(0, 0, 0, 0.3)`,
-          backgroundColor: "#D3D3D3",
-          height: "10vh",
-          width: "100%",
-          alignItems: "center",
-          justifyContent: "center",
-          display: "flex",
-          flexDirection: "row",
-          overflowY: "auto",
-          marginLeft: "10px",
-          marginRight: "10px",
-          position: "fixed",
-          top: "15vh",
-          zIndex: "2",
-        }}
-      >
-        {CATAGORY.map((element) => {
-          return <CategoryBox cname={element} />;
-        })}
-      </Box>
-      <Box sx={{ height: "26vh" }} />
+              return (
+                <MenuCard
+                  name={data[key][item].name}
+                  veg={1}
+                  prices={data[key][item].price}
+                />
+              );
+            })}
+          </>
+        );
+      })}
+      {/* <MenuHeadings header="Bhilai Biryani House" />
       <MenuCard name="Briyani" veg={0} prices={[100, 200, 300]} />
-      <MenuCard name="Rice" veg={1} prices={[100, 200]} />
+      <MenuCard name="Rice" veg={1} prices={[100, 200]} /> */}
     </div>
   );
 }
+
+const MenuHeadings = ({ header }) => (
+  <div
+    style={{
+      display: "flex",
+      width: "200px",
+      height: "60px",
+      background: "maroon",
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    <Typography style={{ fontSize: "18px", color: "#fff" }}>
+      {header}
+    </Typography>
+  </div>
+);
 
 export default Customer;
